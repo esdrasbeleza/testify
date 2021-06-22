@@ -160,12 +160,6 @@ type SuiteTester struct {
 	TestSubtestRunCount   int
 	NonTestMethodRunCount int
 
-	SuiteNameBefore []string
-	TestNameBefore  []string
-
-	SuiteNameAfter []string
-	TestNameAfter  []string
-
 	TimeBefore []time.Time
 	TimeAfter  []time.Time
 }
@@ -174,18 +168,6 @@ type SuiteTester struct {
 // start of the testing suite, before any tests are run.
 func (suite *SuiteTester) SetupSuite() {
 	suite.SetupSuiteRunCount++
-}
-
-func (suite *SuiteTester) BeforeTest(suiteName, testName string) {
-	suite.SuiteNameBefore = append(suite.SuiteNameBefore, suiteName)
-	suite.TestNameBefore = append(suite.TestNameBefore, testName)
-	suite.TimeBefore = append(suite.TimeBefore, time.Now())
-}
-
-func (suite *SuiteTester) AfterTest(suiteName, testName string) {
-	suite.SuiteNameAfter = append(suite.SuiteNameAfter, suiteName)
-	suite.TestNameAfter = append(suite.TestNameAfter, testName)
-	suite.TimeAfter = append(suite.TimeAfter, time.Now())
 }
 
 // The TearDownSuite method will be run by testify once, at the very
@@ -293,37 +275,6 @@ func TestRunSuite(t *testing.T) {
 	// methods should have each been run only once.
 	assert.Equal(t, suiteTester.SetupSuiteRunCount, 1)
 	assert.Equal(t, suiteTester.TearDownSuiteRunCount, 1)
-
-	assert.Equal(t, len(suiteTester.SuiteNameAfter), 4)
-	assert.Equal(t, len(suiteTester.SuiteNameBefore), 4)
-	assert.Equal(t, len(suiteTester.TestNameAfter), 4)
-	assert.Equal(t, len(suiteTester.TestNameBefore), 4)
-
-	assert.Contains(t, suiteTester.TestNameAfter, "TestOne")
-	assert.Contains(t, suiteTester.TestNameAfter, "TestTwo")
-	assert.Contains(t, suiteTester.TestNameAfter, "TestSkip")
-	assert.Contains(t, suiteTester.TestNameAfter, "TestSubtest")
-
-	assert.Contains(t, suiteTester.TestNameBefore, "TestOne")
-	assert.Contains(t, suiteTester.TestNameBefore, "TestTwo")
-	assert.Contains(t, suiteTester.TestNameBefore, "TestSkip")
-	assert.Contains(t, suiteTester.TestNameBefore, "TestSubtest")
-
-	for _, suiteName := range suiteTester.SuiteNameAfter {
-		assert.Equal(t, "SuiteTester", suiteName)
-	}
-
-	for _, suiteName := range suiteTester.SuiteNameBefore {
-		assert.Equal(t, "SuiteTester", suiteName)
-	}
-
-	for _, when := range suiteTester.TimeAfter {
-		assert.False(t, when.IsZero())
-	}
-
-	for _, when := range suiteTester.TimeBefore {
-		assert.False(t, when.IsZero())
-	}
 
 	// There are four test methods (TestOne, TestTwo, TestSkip, and TestSubtest), so
 	// the SetupTest and TearDownTest methods (which should be run once for
